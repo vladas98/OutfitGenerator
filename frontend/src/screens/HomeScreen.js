@@ -4,30 +4,20 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { listItems } from '../api/items';
 import { listSavedOutfits } from '../api/outfits';
-import { colors, radii, shadow, spacing, type } from '../constants/theme';
+import { colors, radii, spacing, type } from '../constants/theme';
 
-function ActionCard({ icon, title, subtitle, onPress, primary }) {
+function MenuRow({ icon, title, subtitle, onPress, last }) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        primary && styles.cardPrimary,
-        pressed && styles.cardPressed,
-      ]}
+      style={({ pressed }) => [styles.row, last && styles.rowLast, pressed && styles.rowPressed]}
     >
-      <View style={[styles.cardIcon, primary && styles.cardIconPrimary]}>
-        <Ionicons name={icon} size={21} color={primary ? colors.onAccent : colors.accent} />
+      <Ionicons name={icon} size={19} color={colors.ink} style={styles.rowIcon} />
+      <View style={styles.rowText}>
+        <Text style={styles.rowTitle}>{title}</Text>
+        <Text style={styles.rowSubtitle}>{subtitle}</Text>
       </View>
-      <View style={styles.cardText}>
-        <Text style={[styles.cardTitle, primary && styles.cardTitlePrimary]}>{title}</Text>
-        <Text style={[styles.cardSubtitle, primary && styles.cardSubtitlePrimary]}>{subtitle}</Text>
-      </View>
-      <Ionicons
-        name="chevron-forward"
-        size={18}
-        color={primary ? 'rgba(255,255,255,0.6)' : colors.inkFaint}
-      />
+      <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
     </Pressable>
   );
 }
@@ -44,103 +34,132 @@ export default function HomeScreen({ navigation }) {
   );
 
   const countLabel = (n, singular) =>
-    n === null ? '—' : `${n} ${n === 1 ? singular : `${singular}s`}`;
+    n === null ? 'View your closet' : `${n} ${n === 1 ? singular : `${singular}s`}`;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.greeting}>Your closet</Text>
-      <Text style={styles.tagline}>AI-powered outfits, styled from what you already own.</Text>
+      <Text style={styles.eyebrow}>OUTFITGENERATOR</Text>
+      <Text style={styles.headline}>Style, from{'\n'}your own closet.</Text>
+      <Text style={styles.tagline}>AI-styled outfits, built from what you already own.</Text>
 
       <View style={styles.statsRow}>
         <View style={styles.stat}>
           <Text style={styles.statValue}>{stats.items ?? '—'}</Text>
-          <Text style={styles.statLabel}>Items</Text>
+          <Text style={styles.statLabel}>ITEMS</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.stat}>
           <Text style={styles.statValue}>{stats.saved ?? '—'}</Text>
-          <Text style={styles.statLabel}>Saved outfits</Text>
+          <Text style={styles.statLabel}>SAVED LOOKS</Text>
         </View>
       </View>
 
-      <ActionCard
-        primary
-        icon="sparkles"
-        title="Generate an outfit"
-        subtitle="Pick an occasion and get a styled look"
+      <Pressable
         onPress={() => navigation.navigate('OutfitsTab')}
-      />
-      <ActionCard
-        icon="camera-outline"
-        title="Add items"
-        subtitle="Photograph clothes to build your closet"
-        onPress={() => navigation.navigate('AddTab')}
-      />
-      <ActionCard
-        icon="grid-outline"
-        title="My closet"
-        subtitle={countLabel(stats.items, 'item')}
-        onPress={() => navigation.navigate('ClosetTab')}
-      />
-      <ActionCard
-        icon="heart-outline"
-        title="Saved outfits"
-        subtitle={countLabel(stats.saved, 'outfit')}
-        onPress={() => navigation.navigate('SavedTab')}
-      />
+        style={({ pressed }) => [styles.hero, pressed && styles.heroPressed]}
+      >
+        <View>
+          <Text style={styles.heroEyebrow}>TODAY'S PICK</Text>
+          <Text style={styles.heroTitle}>Generate an outfit</Text>
+          <Text style={styles.heroSubtitle}>Pick an occasion, get a styled look</Text>
+        </View>
+        <View style={styles.heroIconCircle}>
+          <Ionicons name="sparkles" size={20} color={colors.onAccent} />
+        </View>
+      </Pressable>
+
+      <Text style={styles.sectionLabel}>YOUR WARDROBE</Text>
+      <View style={styles.menu}>
+        <MenuRow
+          icon="camera-outline"
+          title="Add items"
+          subtitle="Photograph clothes to build your closet"
+          onPress={() => navigation.navigate('AddTab')}
+        />
+        <MenuRow
+          icon="grid-outline"
+          title="My closet"
+          subtitle={countLabel(stats.items, 'item')}
+          onPress={() => navigation.navigate('ClosetTab')}
+        />
+        <MenuRow
+          icon="heart-outline"
+          title="Saved outfits"
+          subtitle={countLabel(stats.saved, 'outfit')}
+          onPress={() => navigation.navigate('SavedTab')}
+          last
+        />
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingTop: spacing.xl },
-  greeting: { ...type.display, color: colors.ink },
+  content: { padding: spacing.lg, paddingTop: spacing.xxl, paddingBottom: spacing.xxl },
+  eyebrow: { ...type.overline, color: colors.accent, marginBottom: spacing.md },
+  headline: { ...type.display, color: colors.ink },
   tagline: {
-    ...type.body,
-    fontSize: 14,
+    ...type.subtitleItalic,
     color: colors.inkMuted,
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
     marginBottom: spacing.xl,
-    lineHeight: 20,
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
     paddingVertical: spacing.lg,
     marginBottom: spacing.xl,
   },
   stat: { flex: 1, alignItems: 'center' },
-  statDivider: { width: 1, backgroundColor: colors.border, marginVertical: spacing.xs },
-  statValue: { ...type.title, fontSize: 24, color: colors.ink },
-  statLabel: { ...type.caption, color: colors.inkMuted, marginTop: 2 },
-  card: {
+  statDivider: { width: 1, backgroundColor: colors.border },
+  statValue: { ...type.title, fontSize: 26, color: colors.ink },
+  statLabel: { ...type.overline, color: colors.inkFaint, marginTop: 4 },
+  hero: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    ...shadow.card,
-  },
-  cardPrimary: { backgroundColor: colors.accent, borderColor: colors.accent },
-  cardPressed: { opacity: 0.9, transform: [{ scale: 0.995 }] },
-  cardIcon: {
-    width: 42,
-    height: 42,
+    justifyContent: 'space-between',
+    backgroundColor: colors.accent,
     borderRadius: radii.md,
-    backgroundColor: colors.accentSoft,
+    padding: spacing.lg,
+    marginBottom: spacing.xxl,
+  },
+  heroPressed: { opacity: 0.92 },
+  heroEyebrow: {
+    ...type.overline,
+    color: 'rgba(255,255,255,0.75)',
+    marginBottom: 6,
+  },
+  heroTitle: { ...type.title, fontSize: 19, color: colors.onAccent },
+  heroSubtitle: { ...type.caption, color: 'rgba(255,255,255,0.85)', marginTop: 3 },
+  heroIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardIconPrimary: { backgroundColor: 'rgba(255,255,255,0.18)' },
-  cardText: { flex: 1 },
-  cardTitle: { ...type.heading, color: colors.ink },
-  cardTitlePrimary: { color: colors.onAccent },
-  cardSubtitle: { ...type.caption, color: colors.inkMuted, marginTop: 2 },
-  cardSubtitlePrimary: { color: 'rgba(255,255,255,0.8)' },
+  sectionLabel: { ...type.overline, color: colors.inkFaint, marginBottom: spacing.sm },
+  menu: {
+    borderTopWidth: 1,
+    borderColor: colors.border,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.lg,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
+  },
+  rowLast: {},
+  rowPressed: { backgroundColor: colors.surface },
+  rowIcon: { width: 22 },
+  rowText: { flex: 1 },
+  rowTitle: { ...type.heading, color: colors.ink },
+  rowSubtitle: { ...type.caption, color: colors.inkMuted, marginTop: 2 },
 });

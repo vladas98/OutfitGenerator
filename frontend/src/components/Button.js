@@ -45,12 +45,14 @@ export default function Button({
 }
 
 const styles = StyleSheet.create({
-  base: { borderRadius: radii.md, alignItems: 'center', justifyContent: 'center' },
-  sizeMd: { paddingVertical: 15, paddingHorizontal: spacing.lg, minHeight: 50 },
+  base: { borderRadius: radii.sm, alignItems: 'center', justifyContent: 'center' },
+  sizeMd: { paddingVertical: 16, paddingHorizontal: spacing.lg, minHeight: 52 },
   sizeSm: { paddingVertical: 8, paddingHorizontal: spacing.md, minHeight: 34 },
-  content: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  label: { ...type.heading, fontSize: 15 },
-  labelSm: { ...type.label, fontSize: 12 },
+  content: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  // Buttons are UI chrome, not content — sans-serif uppercase tracked, the
+  // Zara "ADD TO BAG" treatment, not the serif used for headlines.
+  label: { ...type.label, fontSize: 13, letterSpacing: 1.2 },
+  labelSm: { ...type.label, fontSize: 11 },
   primary: { backgroundColor: colors.accent },
   secondary: { backgroundColor: colors.surfaceRaised, borderWidth: 1, borderColor: colors.borderStrong },
   danger: { backgroundColor: colors.dangerSoft, borderWidth: 1, borderColor: '#EBC9C4' },

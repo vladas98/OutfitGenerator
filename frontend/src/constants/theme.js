@@ -1,27 +1,37 @@
 // Shared design tokens. Screens should pull from here rather than hard-coding
 // colors and spacing, so the app stays visually consistent as it grows.
+//
+// Direction: fashion-editorial (Zara-app-like structure — lots of white space,
+// hairline borders instead of shadows, uppercase tracked labels, a serif
+// display face for headings) with a dusty-rose accent carrying the "girly"
+// feel instead of playful color, so it reads elegant rather than childish.
+
+export const fonts = {
+  serif: 'PlayfairDisplay_500Medium',
+  serifSemiBold: 'PlayfairDisplay_600SemiBold',
+  serifItalic: 'PlayfairDisplay_400Regular_Italic',
+};
 
 export const colors = {
-  // Warm off-white ground with a near-black ink, which reads softer than pure
-  // black-on-white and suits a styling app.
   background: '#FFFFFF',
-  surface: '#F7F5F1',
+  surface: '#FAF7F5',
   surfaceRaised: '#FFFFFF',
-  border: '#E7E3DB',
-  borderStrong: '#D6D1C6',
+  border: '#E9E2DD',
+  borderStrong: '#D8CCC5',
 
-  ink: '#1F1D1A',
-  inkMuted: '#6E6862',
-  inkFaint: '#9C958C',
+  ink: '#211C1D',
+  inkMuted: '#7A6F6C',
+  inkFaint: '#B3A9A5',
 
-  accent: '#2F5D50', // deep green — used for primary actions
-  accentSoft: '#E8F0EC',
+  accent: '#B9737E', // dusty rose — primary actions, the "girly" signal
+  accentDeep: '#9C5560', // pressed / emphasis state of the accent
+  accentSoft: '#F7E9EB', // pale blush surfaces (badges, highlighted sections)
 
   danger: '#A63D33',
   dangerSoft: '#FBEEEC',
 
-  warning: '#8A6D1F',
-  warningSoft: '#FFF8E6',
+  warning: '#96702E',
+  warningSoft: '#FBF2E3',
 
   onAccent: '#FFFFFF',
 };
@@ -35,32 +45,53 @@ export const spacing = {
   xxl: 32,
 };
 
+// Sharper corners than a typical app — editorial fashion UI reads as
+// considered rather than "friendly" when it isn't overly rounded. `pill` is
+// kept only for things that are naturally circular (dots, small badges).
 export const radii = {
-  sm: 8,
-  md: 12,
-  lg: 16,
+  sm: 2,
+  md: 4,
+  lg: 6,
   pill: 999,
 };
 
 export const type = {
-  display: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
-  title: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
-  heading: { fontSize: 16, fontWeight: '700' },
+  // Serif, sentence case — a magazine headline, not a shouting banner.
+  display: {
+    fontFamily: fonts.serifSemiBold,
+    fontSize: 32,
+    letterSpacing: -0.3,
+    lineHeight: 38,
+  },
+  title: { fontFamily: fonts.serifSemiBold, fontSize: 21, letterSpacing: -0.2 },
+  heading: { fontFamily: fonts.serif, fontSize: 16 },
+  subtitleItalic: { fontFamily: fonts.serifItalic, fontSize: 15, lineHeight: 21 },
+
   body: { fontSize: 15, fontWeight: '400' },
-  label: { fontSize: 13, fontWeight: '600' },
+  // Uppercase + tracked: the Zara button/tab/tag treatment.
+  label: { fontSize: 12, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase' },
   caption: { fontSize: 12, fontWeight: '400' },
-  overline: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8 },
+  // The small tracked section labels ("CATEGORY", "WHY THIS WORKS").
+  overline: { fontSize: 10.5, fontWeight: '700', letterSpacing: 1.4, textTransform: 'uppercase' },
 };
 
-// Subtle lift for cards. Kept light — heavy shadows read dated.
+// Flat by default — hairline borders carry separation instead of drop
+// shadows, which is what keeps this reading as editorial rather than "appy".
 export const shadow = {
   card: {
     shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  none: {
+    shadowColor: 'transparent',
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
   },
 };
 
-export default { colors, spacing, radii, type, shadow };
+export default { colors, spacing, radii, type, shadow, fonts };

@@ -179,11 +179,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     backgroundColor: colors.accentSoft,
-    borderRadius: radii.pill,
+    borderRadius: radii.sm,
     paddingVertical: 5,
     paddingHorizontal: spacing.md,
   },
-  occasionBadgeText: { ...type.label, fontSize: 12, color: colors.accent },
+  occasionBadgeText: { ...type.label, fontSize: 11, color: colors.accentDeep },
   recategorizeBox: {
     backgroundColor: colors.surface,
     borderRadius: radii.md,
@@ -195,5 +195,5 @@ const styles = StyleSheet.create({
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap' },
   piecesRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
   pieceImage: { width: 84, height: 84, borderRadius: radii.md, backgroundColor: colors.surface },
-  reasoning: { ...type.body, fontSize: 14, color: colors.inkMuted, marginTop: spacing.md, lineHeight: 20 },
+  reasoning: { ...type.subtitleItalic, fontSize: 14, color: colors.inkMuted, marginTop: spacing.md },
 });

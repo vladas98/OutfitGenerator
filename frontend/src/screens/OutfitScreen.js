@@ -271,11 +271,11 @@ const styles = StyleSheet.create({
   },
   occasionBadge: {
     backgroundColor: colors.accentSoft,
-    borderRadius: radii.pill,
+    borderRadius: radii.sm,
     paddingVertical: 5,
     paddingHorizontal: spacing.md,
   },
-  occasionBadgeText: { ...type.label, fontSize: 12, color: colors.accent },
+  occasionBadgeText: { ...type.label, fontSize: 11, color: colors.accentDeep },
   changeLink: { ...type.label, fontSize: 13, color: colors.accent },
   recategorizeBox: {
     backgroundColor: colors.surface,
@@ -308,7 +308,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   reasoningLabel: { ...type.overline, fontSize: 10, color: colors.inkMuted },
-  reasoningText: { ...type.body, color: colors.ink, marginTop: spacing.xs, lineHeight: 21 },
+  // Claude's explanation reads like a stylist's note — the italic serif gives
+  // it a magazine-caption feel rather than plain UI copy.
+  reasoningText: { ...type.subtitleItalic, color: colors.ink, marginTop: spacing.xs },
   feedbackRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.lg },
   feedbackButton: { flex: 1 },
   feedbackNote: {

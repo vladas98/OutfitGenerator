@@ -1,8 +1,16 @@
+import { useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import * as SplashScreen from 'expo-splash-screen';
+import {
+  useFonts,
+  PlayfairDisplay_400Regular_Italic,
+  PlayfairDisplay_500Medium,
+  PlayfairDisplay_600SemiBold,
+} from '@expo-google-fonts/playfair-display';
 
 import HomeScreen from './src/screens/HomeScreen';
 import ClosetScreen from './src/screens/ClosetScreen';
@@ -12,6 +20,8 @@ import ReviewScreen from './src/screens/ReviewScreen';
 import OutfitScreen from './src/screens/OutfitScreen';
 import SavedOutfitsScreen from './src/screens/SavedOutfitsScreen';
 import { colors, type } from './src/constants/theme';
+
+SplashScreen.preventAutoHideAsync();
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -35,7 +45,8 @@ const navTheme = {
 const stackOptions = {
   headerStyle: { backgroundColor: colors.background },
   headerShadowVisible: false,
-  headerTitleStyle: { ...type.heading, color: colors.ink },
+  // Serif nav titles are what make even a plain header row read editorial.
+  headerTitleStyle: { ...type.title, fontSize: 18, color: colors.ink },
   headerTintColor: colors.accent,
   contentStyle: { backgroundColor: colors.background },
 };
@@ -96,25 +107,40 @@ const TAB_ICONS = {
 };
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    PlayfairDisplay_500Medium,
+    PlayfairDisplay_600SemiBold,
+    PlayfairDisplay_400Regular_Italic,
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) await SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  // Every heading in the app uses the serif font, so nothing should render
+  // until it's actually loaded — otherwise the first frame flashes in the
+  // system font and re-flows once Playfair swaps in.
+  if (!fontsLoaded) return null;
+
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer theme={navTheme} onReady={onLayoutRootView}>
       <Tab.Navigator
         initialRouteName="HomeTab"
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarActiveTintColor: colors.accent,
           tabBarInactiveTintColor: colors.inkFaint,
-          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+          tabBarLabelStyle: { ...type.label, fontSize: 9.5, letterSpacing: 0.4 },
           tabBarStyle: {
             backgroundColor: colors.background,
             borderTopColor: colors.border,
             height: 84,
-            paddingTop: 6,
+            paddingTop: 8,
             paddingBottom: 26,
           },
           tabBarIcon: ({ focused, color, size }) => {
             const [active, inactive] = TAB_ICONS[route.name];
-            return <Ionicons name={focused ? active : inactive} size={size - 2} color={color} />;
+            return <Ionicons name={focused ? active : inactive} size={size - 3} color={color} />;
           },
         })}
       >
