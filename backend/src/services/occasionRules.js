@@ -104,22 +104,6 @@ const OCCASION_RULES = {
       'Midi or maxi lengths are preferred; cocktail-to-formal silhouettes',
     ],
   },
-  beach: {
-    allowedFormality: ['casual'],
-    avoidColorFamilies: [],
-    avoidPatterns: [],
-    allowedSeasons: ['summer', 'all_season'],
-    disallowedSleeves: [],
-    disallowedNecklines: [],
-    disallowedHemlines: [],
-    disallowedGarmentStyles: ['loungewear'],
-    colorRelationAdjustments: {},
-    extraHuePenaltyPerColor: 1,
-    donts: [
-      'No heavy outerwear, wool, or winter fabrics',
-      'Avoid business or formal pieces entirely',
-    ],
-  },
 };
 
 const DEFAULT_RULE = {

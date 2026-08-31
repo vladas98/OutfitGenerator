@@ -33,7 +33,6 @@ export const OCCASIONS = [
   { key: 'school', label: 'School' },
   { key: 'wedding_guest', label: 'Wedding Guest' },
   { key: 'date_night', label: 'Date Night' },
-  { key: 'beach', label: 'Beach' },
 ];
 
 export const COLOR_SWATCHES = {
