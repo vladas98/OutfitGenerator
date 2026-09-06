@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   Pressable,
@@ -10,6 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { alert } from '../utils/alert';
 import { Ionicons } from '@expo/vector-icons';
 import Chip from '../components/Chip';
 import EmptyState from '../components/EmptyState';
@@ -46,7 +46,7 @@ export default function SavedOutfitsScreen({ navigation }) {
   );
 
   const handleDelete = (outfit) => {
-    Alert.alert('Remove from saved', 'This only removes it from Saved — your clothes stay in your closet.', [
+    alert('Remove from saved', 'This only removes it from Saved — your clothes stay in your closet.', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Remove',
@@ -57,7 +57,7 @@ export default function SavedOutfitsScreen({ navigation }) {
             await unsaveOutfit(outfit._id);
             setOutfits((prev) => prev.filter((o) => o._id !== outfit._id));
           } catch (err) {
-            Alert.alert('Could not remove', 'Please try again.');
+            alert('Could not remove', 'Please try again.');
           } finally {
             setBusyId(null);
           }
@@ -73,7 +73,7 @@ export default function SavedOutfitsScreen({ navigation }) {
       setOutfits((prev) => prev.map((o) => (o._id === outfit._id ? { ...o, occasion: updated.occasion } : o)));
       setEditingId(null);
     } catch (err) {
-      Alert.alert('Could not update', 'Please try again.');
+      alert('Could not update', 'Please try again.');
     } finally {
       setBusyId(null);
     }

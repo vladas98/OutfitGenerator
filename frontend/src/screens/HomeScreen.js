@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { alert } from '../utils/alert';
 import { Ionicons } from '@expo/vector-icons';
 import { listItems } from '../api/items';
 import { listSavedOutfits } from '../api/outfits';
@@ -39,7 +40,7 @@ export default function HomeScreen({ navigation }) {
     n === null ? 'View your closet' : `${n} ${n === 1 ? singular : `${singular}s`}`;
 
   const handleLogout = () => {
-    Alert.alert('Log out', 'You can always log back in to the same closet.', [
+    alert('Log out', 'You can always log back in to the same closet.', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Log out', style: 'destructive', onPress: logout },
     ]);

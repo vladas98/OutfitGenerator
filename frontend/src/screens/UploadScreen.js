@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { alert } from '../utils/alert';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../components/Button';
 import EmptyState from '../components/EmptyState';
@@ -14,7 +15,7 @@ export default function UploadScreen({ navigation }) {
   const pickFromLibrary = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permission needed', 'Photo library access is required to add items.');
+      alert('Permission needed', 'Photo library access is required to add items.');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -28,7 +29,7 @@ export default function UploadScreen({ navigation }) {
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permission needed', 'Camera access is required to add items.');
+      alert('Permission needed', 'Camera access is required to add items.');
       return;
     }
     const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
@@ -43,7 +44,7 @@ export default function UploadScreen({ navigation }) {
       setAssets([]);
       navigation.navigate('Review', { itemIds: items.map((i) => i._id) });
     } catch (err) {
-      Alert.alert(
+      alert(
         'Upload failed',
         'Could not upload your photos. Check that the backend is running and reachable, then try again.'
       );

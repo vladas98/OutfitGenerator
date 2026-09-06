@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { alert } from '../utils/alert';
 import ItemCard from '../components/ItemCard';
 import Button from '../components/Button';
 import DuplicateReviewCard from '../components/DuplicateReviewCard';
@@ -53,7 +54,7 @@ export default function ReviewScreen({ route, navigation }) {
       await dismissDuplicate(item._id);
       setItems((prev) => prev.map((i) => (i._id === item._id ? { ...i, duplicateOfItemId: null } : i)));
     } catch (err) {
-      Alert.alert('Could not save', 'Please try again.');
+      alert('Could not save', 'Please try again.');
     } finally {
       setBusyItemId(null);
     }
@@ -65,7 +66,7 @@ export default function ReviewScreen({ route, navigation }) {
       await deleteItem(item._id);
       setItems((prev) => prev.filter((i) => i._id !== item._id));
     } catch (err) {
-      Alert.alert('Could not delete', 'Please try again.');
+      alert('Could not delete', 'Please try again.');
     } finally {
       setBusyItemId(null);
     }

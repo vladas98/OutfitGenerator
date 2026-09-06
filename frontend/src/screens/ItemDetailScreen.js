@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -9,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { alert } from '../utils/alert';
 import { Ionicons } from '@expo/vector-icons';
 import Chip from '../components/Chip';
 import Button from '../components/Button';
@@ -62,14 +62,14 @@ export default function ItemDetailScreen({ route, navigation }) {
     try {
       setItem(await updateItem(itemId, { [field]: value }));
     } catch (err) {
-      Alert.alert('Update failed', 'Could not save this change. Please try again.');
+      alert('Update failed', 'Could not save this change. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = () => {
-    Alert.alert('Delete item', 'Remove this item from your closet?', [
+    alert('Delete item', 'Remove this item from your closet?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -79,7 +79,7 @@ export default function ItemDetailScreen({ route, navigation }) {
             await deleteItem(itemId);
             navigation.goBack();
           } catch (err) {
-            Alert.alert('Delete failed', 'Could not delete this item. Please try again.');
+            alert('Delete failed', 'Could not delete this item. Please try again.');
           }
         },
       },

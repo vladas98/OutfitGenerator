@@ -112,6 +112,55 @@ function repeatPenalty(candidateItems, recentIdSets) {
   return -worst;
 }
 
+// How much one recent reappearance of a single piece costs. Separate from
+// repeatPenalty, which only catches a *whole outfit* repeating — it uses
+// Math.max across recent outfits, so a piece that reappears in 4 of the last
+// 5 generations (each time paired with a different other piece) scored the
+// same tiny penalty as reappearing once, since no single recent outfit fully
+// matched. A dominant neutral piece (scores well with everything) could ride
+// that gap indefinitely: different outfit each time by the system's own
+// bookkeeping, same top every time from the user's seat. This sums instead of
+// capping, so repeats actually accumulate a cost.
+const ITEM_RECENCY_WEIGHT = 2.5;
+
+function recentItemPenalty(candidateItems, recentIdSets) {
+  if (!recentIdSets || recentIdSets.length === 0) return 0;
+  let occurrences = 0;
+  for (const item of candidateItems) {
+    const id = String(item._id);
+    occurrences += recentIdSets.filter((set) => set.has(id)).length;
+  }
+  return -occurrences * ITEM_RECENCY_WEIGHT;
+}
+
+// Smaller than ITEM_RECENCY_WEIGHT, and deliberately fuzzier: this is what
+// stops "different beige top, same beige top" from reading as variety. Two
+// distinct beige tops each satisfy the exact-item penalty above on their own,
+// since neither individual item repeats often — but a user who owns two
+// beige tops and one each of white/blue sees "beige" far more than a third of
+// the time regardless of which physical beige item was used. This tracks
+// category+color pairs actually worn recently, not item identity.
+const CATEGORY_COLOR_RECENCY_WEIGHT = 2;
+
+function recentCategoryColorPenalty(candidateItems, recentOutfitItemIds, itemById) {
+  if (!recentOutfitItemIds || recentOutfitItemIds.length === 0) return 0;
+  let occurrences = 0;
+  for (const item of candidateItems) {
+    for (const recentIds of recentOutfitItemIds) {
+      const wornSameSlot = recentIds.some((id) => {
+        const recentItem = itemById.get(String(id));
+        return (
+          recentItem &&
+          recentItem.category === item.category &&
+          recentItem.colorFamily === item.colorFamily
+        );
+      });
+      if (wornSameSlot) occurrences++;
+    }
+  }
+  return -occurrences * CATEGORY_COLOR_RECENCY_WEIGHT;
+}
+
 function shuffle(array) {
   const out = [...array];
   for (let i = out.length - 1; i > 0; i--) {
@@ -147,6 +196,7 @@ function buildCandidates(
   const rule = getOccasionRule(occasion);
   const excluded = new Set(excludeItemIds.map(String));
   const seeds = seedItemIds.map(String);
+  const itemById = new Map(items.map((i) => [String(i._id), i]));
 
   const eligible = items.filter((item) => {
     if (excluded.has(String(item._id))) return false;
@@ -219,7 +269,11 @@ function buildCandidates(
   const recentIdSets = recentOutfitItemIds.map((ids) => new Set(ids.map(String)));
   const adjusted = withSeeds.map((c) => ({
     ...c,
-    score: c.score + repeatPenalty(c.items, recentIdSets),
+    score:
+      c.score +
+      repeatPenalty(c.items, recentIdSets) +
+      recentItemPenalty(c.items, recentIdSets) +
+      recentCategoryColorPenalty(c.items, recentOutfitItemIds, itemById),
   }));
 
   adjusted.sort((a, b) => b.score - a.score);
