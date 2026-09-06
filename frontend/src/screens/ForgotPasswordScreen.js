@@ -2,27 +2,52 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import TextField from '../components/TextField';
 import Button from '../components/Button';
-import { useAuth } from '../context/AuthContext';
+import { resetPassword } from '../api/auth';
 import { colors, layout, spacing, type } from '../constants/theme';
 
-export default function LoginScreen({ navigation }) {
-  const { login } = useAuth();
+const MIN_PASSWORD_LENGTH = 6;
+
+export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
 
   const handleSubmit = async () => {
     setError(null);
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(email.trim(), password);
+      await resetPassword(email.trim(), newPassword);
+      setDone(true);
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not log in. Check your connection and try again.');
+      setError(err.response?.data?.error || 'Could not reset password. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (done) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.headline}>Password reset.</Text>
+          <Text style={styles.tagline}>Log in with your new password.</Text>
+          <Button label="Back to log in" onPress={() => navigation.navigate('Login')} style={styles.submit} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -31,8 +56,8 @@ export default function LoginScreen({ navigation }) {
     >
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.eyebrow}>OUTFITGENERATOR</Text>
-        <Text style={styles.headline}>Welcome back.</Text>
-        <Text style={styles.tagline}>Log in to your closet.</Text>
+        <Text style={styles.headline}>Reset your password.</Text>
+        <Text style={styles.tagline}>Enter your email and a new password.</Text>
 
         <View style={styles.form}>
           <TextField
@@ -45,12 +70,21 @@ export default function LoginScreen({ navigation }) {
             placeholder="you@example.com"
           />
           <TextField
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
+            label="New password"
+            value={newPassword}
+            onChangeText={setNewPassword}
             secureTextEntry
-            autoComplete="password"
-            textContentType="password"
+            autoComplete="password-new"
+            textContentType="newPassword"
+            placeholder="••••••••"
+          />
+          <TextField
+            label="Confirm new password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            autoComplete="password-new"
+            textContentType="newPassword"
             placeholder="••••••••"
           />
 
@@ -60,16 +94,12 @@ export default function LoginScreen({ navigation }) {
             </View>
           )}
 
-          <Button label="Log in" onPress={handleSubmit} loading={loading} style={styles.submit} />
-
-          <Pressable onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotLink} hitSlop={8}>
-            <Text style={styles.forgotText}>Forgot password?</Text>
-          </Pressable>
+          <Button label="Reset password" onPress={handleSubmit} loading={loading} style={styles.submit} />
         </View>
 
-        <Pressable onPress={() => navigation.navigate('SignUp')} style={styles.switchLink} hitSlop={8}>
+        <Pressable onPress={() => navigation.navigate('Login')} style={styles.switchLink} hitSlop={8}>
           <Text style={styles.switchText}>
-            New here? <Text style={styles.switchTextAccent}>Create an account</Text>
+            Remembered it? <Text style={styles.switchTextAccent}>Back to log in</Text>
           </Text>
         </Pressable>
       </ScrollView>
@@ -93,8 +123,6 @@ const styles = StyleSheet.create({
   errorBox: { backgroundColor: colors.dangerSoft, borderRadius: 4, padding: spacing.md, marginBottom: spacing.lg },
   errorText: { ...type.caption, color: colors.danger },
   submit: { marginTop: spacing.xs },
-  forgotLink: { marginTop: spacing.md, alignSelf: 'center' },
-  forgotText: { ...type.caption, color: colors.accentDeep, fontWeight: '600' },
   switchLink: { marginTop: spacing.xl, alignSelf: 'center' },
   switchText: { ...type.caption, color: colors.inkMuted },
   switchTextAccent: { color: colors.accentDeep, fontWeight: '600' },

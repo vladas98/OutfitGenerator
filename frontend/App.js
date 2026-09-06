@@ -15,6 +15,7 @@ import {
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import LoginScreen from './src/screens/LoginScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import ClosetScreen from './src/screens/ClosetScreen';
 import ItemDetailScreen from './src/screens/ItemDetailScreen';
@@ -60,6 +61,7 @@ function AuthStackScreen() {
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="SignUp" component={SignUpScreen} />
+      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     </AuthStack.Navigator>
   );
 }

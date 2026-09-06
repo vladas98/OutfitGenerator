@@ -57,6 +57,29 @@ async function login(req, res, next) {
   }
 }
 
+async function resetPassword(req, res, next) {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !EMAIL_RE.test(email)) {
+      return res.status(400).json({ error: 'A valid email is required' });
+    }
+    if (!newPassword || newPassword.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
+    }
+
+    const user = await User.findOne({ email: String(email).toLowerCase().trim() });
+    if (user) {
+      user.passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+      await user.save();
+    }
+    // Same response whether the email exists or not — don't let it reveal
+    // which emails have an account, same reasoning as login's shared error.
+    res.json({ message: 'If an account exists for that email, the password has been reset.' });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function me(req, res, next) {
   try {
     const user = await User.findById(req.userId);
@@ -67,4 +90,4 @@ async function me(req, res, next) {
   }
 }
 
-module.exports = { register, login, me };
+module.exports = { register, login, resetPassword, me };
