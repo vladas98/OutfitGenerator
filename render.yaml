@@ -24,3 +24,20 @@ services:
         value: anthropic/claude-haiku-4.5
       - key: OPENROUTER_SITE_NAME
         value: OutfitGenerator
+
+  - type: web
+    name: outfitgenerator-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npx expo export -p web
+    staticPublishPath: dist
+    envVars:
+      # Baked into the JS bundle at build time — the live backend's own URL.
+      - key: EXPO_PUBLIC_API_URL
+        value: https://outfitgenerator-backend-aen9.onrender.com
+    routes:
+      # Client-side routing (React Navigation) needs every path to fall
+      # through to index.html rather than 404ing on refresh/deep link.
+      - type: rewrite
+        source: /*
+        destination: /index.html
