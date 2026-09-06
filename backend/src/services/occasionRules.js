@@ -91,8 +91,13 @@ const OCCASION_RULES = {
   },
   wedding_guest: {
     allowedFormality: ['business', 'formal'],
-    // White, ivory, and cream belong to the bride; beige covers cream/pale blush here.
+    // White, ivory, and cream belong to the bride; beige covers cream/pale
+    // blush here. Scoped to dress/bottom — the concern is reading as bridal
+    // (a white gown or skirt), not a top. A white or beige dress shirt under
+    // a jacket is standard menswear, not a faux pas; an unscoped ban was
+    // wrongly excluding it.
     avoidColorFamilies: ['white', 'beige'],
+    avoidColorFamiliesFor: ['dress', 'bottom'],
     avoidPatterns: ['graphic', 'sequin', 'sequins'],
     allowedSeasons: null,
     disallowedSleeves: [],
@@ -108,7 +113,7 @@ const OCCASION_RULES = {
     colorRelationAdjustments: { complementary: -1 },
     extraHuePenaltyPerColor: 3,
     donts: [
-      'Never wear white, ivory, cream, or pale blush — those are reserved for the bride',
+      'Never wear a white, ivory, cream, or pale blush dress, skirt, or trousers — those are reserved for the bride. A white or beige shirt under a jacket is fine.',
       'Avoid denim, t-shirts, and other overly casual pieces',
       'Avoid anything overly revealing — very low-cut or backless without a cover-up',
       'Midi or maxi lengths are preferred; cocktail-to-formal silhouettes',

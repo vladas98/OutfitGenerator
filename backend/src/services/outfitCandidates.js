@@ -11,9 +11,14 @@ function passesFormality(item, rule) {
   return rule.allowedFormality.includes(item.formality);
 }
 
-function passesColorRule(item, avoidColorFamilies) {
-  if (!avoidColorFamilies || avoidColorFamilies.length === 0) return true;
-  return !avoidColorFamilies.includes(item.colorFamily);
+function passesColorRule(item, rule) {
+  if (!rule.avoidColorFamilies || rule.avoidColorFamilies.length === 0) return true;
+  // Wedding guest's "no white" is about not reading as bridal — that's a
+  // dress/bottom concern (a white gown or skirt), not a top. A white or beige
+  // dress shirt under a jacket is standard menswear, not a fashion faux pas,
+  // so an unscoped ban was wrongly excluding it.
+  if (rule.avoidColorFamiliesFor && !rule.avoidColorFamiliesFor.includes(item.category)) return true;
+  return !rule.avoidColorFamilies.includes(item.colorFamily);
 }
 
 function passesPatternRule(item, avoidPatterns) {
@@ -207,7 +212,7 @@ function buildCandidates(
     return (
       item.status === 'classified' &&
       passesFormality(item, rule) &&
-      passesColorRule(item, rule.avoidColorFamilies) &&
+      passesColorRule(item, rule) &&
       passesPatternRule(item, rule.avoidPatterns) &&
       passesSeasonRule(item, rule.allowedSeasons) &&
       passesCoverageRules(item, rule)
@@ -302,7 +307,7 @@ function diagnoseShortage(items, occasion, { seedItemIds = [], excludeItemIds = 
       !excluded.has(String(item._id)) &&
       (seeds.includes(String(item._id)) ||
         (passesFormality(item, rule) &&
-          passesColorRule(item, rule.avoidColorFamilies) &&
+          passesColorRule(item, rule) &&
           passesPatternRule(item, rule.avoidPatterns) &&
           passesSeasonRule(item, rule.allowedSeasons) &&
           passesCoverageRules(item, rule)))
