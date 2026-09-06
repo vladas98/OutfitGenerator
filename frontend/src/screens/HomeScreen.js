@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { listItems } from '../api/items';
 import { listSavedOutfits } from '../api/outfits';
-import { colors, radii, spacing, type } from '../constants/theme';
+import { useAuth } from '../context/AuthContext';
+import { colors, layout, radii, spacing, type } from '../constants/theme';
 
 function MenuRow({ icon, title, subtitle, onPress, last }) {
   return (
@@ -23,6 +24,7 @@ function MenuRow({ icon, title, subtitle, onPress, last }) {
 }
 
 export default function HomeScreen({ navigation }) {
+  const { user, logout } = useAuth();
   const [stats, setStats] = useState({ items: null, saved: null });
 
   useFocusEffect(
@@ -36,10 +38,19 @@ export default function HomeScreen({ navigation }) {
   const countLabel = (n, singular) =>
     n === null ? 'View your closet' : `${n} ${n === 1 ? singular : `${singular}s`}`;
 
+  const handleLogout = () => {
+    Alert.alert('Log out', 'You can always log back in to the same closet.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Log out', style: 'destructive', onPress: logout },
+    ]);
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.eyebrow}>OUTFITGENERATOR</Text>
-      <Text style={styles.headline}>Style, from{'\n'}your own closet.</Text>
+      <Text style={styles.headline}>
+        {user?.name ? `Hi, ${user.name.split(' ')[0]}.` : 'Style, from\nyour own closet.'}
+      </Text>
       <Text style={styles.tagline}>AI-styled outfits, built from what you already own.</Text>
 
       <View style={styles.statsRow}>
@@ -90,12 +101,17 @@ export default function HomeScreen({ navigation }) {
           last
         />
       </View>
+
+      <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>ACCOUNT</Text>
+      <View style={styles.menu}>
+        <MenuRow icon="log-out-outline" title="Log out" subtitle={user?.email} onPress={handleLogout} last />
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   content: { padding: spacing.lg, paddingTop: spacing.xxl, paddingBottom: spacing.xxl },
   eyebrow: { ...type.overline, color: colors.accent, marginBottom: spacing.md },
   headline: { ...type.display, color: colors.ink },
@@ -144,6 +160,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sectionLabel: { ...type.overline, color: colors.inkFaint, marginBottom: spacing.sm },
+  sectionLabelSpaced: { marginTop: spacing.xxl },
   menu: {
     borderTopWidth: 1,
     borderColor: colors.border,

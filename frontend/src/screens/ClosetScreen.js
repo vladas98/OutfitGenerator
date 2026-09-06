@@ -17,7 +17,7 @@ import EmptyState from '../components/EmptyState';
 import DuplicateReviewCard from '../components/DuplicateReviewCard';
 import { listItems, deleteItem, dismissDuplicate } from '../api/items';
 import { CATEGORIES, COLOR_FAMILIES, COLOR_SWATCHES } from '../constants/options';
-import { colors, radii, spacing, type } from '../constants/theme';
+import { colors, layout, radii, spacing, type } from '../constants/theme';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -203,7 +203,7 @@ export default function ClosetScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   filterBar: {
     paddingBottom: spacing.xs,
     borderBottomWidth: 1,

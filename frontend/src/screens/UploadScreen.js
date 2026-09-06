@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Button from '../components/Button';
 import EmptyState from '../components/EmptyState';
 import { uploadItemsBatch } from '../api/items';
-import { colors, radii, spacing, type } from '../constants/theme';
+import { colors, layout, radii, spacing, type } from '../constants/theme';
 
 export default function UploadScreen({ navigation }) {
   const [assets, setAssets] = useState([]);
@@ -85,7 +85,7 @@ export default function UploadScreen({ navigation }) {
               style={styles.thumbWrapper}
               onPress={() => setAssets((prev) => prev.filter((a) => a.uri !== asset.uri))}
             >
-              <Image source={{ uri: asset.uri }} style={styles.thumb} />
+              <Image source={{ uri: asset.uri }} style={styles.thumb} resizeMode="contain" />
               <View style={styles.removeBadge}>
                 <Ionicons name="close" size={13} color={colors.onAccent} />
               </View>
@@ -110,7 +110,7 @@ export default function UploadScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   actionRow: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.xs },
   actionButton: { flex: 1 },
   thumbGrid: {

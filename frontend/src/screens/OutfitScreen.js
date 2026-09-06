@@ -15,7 +15,7 @@ import { generateOutfit, updateOutfitOccasion } from '../api/outfits';
 import { getItem } from '../api/items';
 import { submitFeedback } from '../api/feedback';
 import { OCCASIONS } from '../constants/options';
-import { colors, radii, shadow, spacing, type } from '../constants/theme';
+import { colors, layout, radii, shadow, spacing, type } from '../constants/theme';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000';
 const occasionLabel = (key) => OCCASIONS.find((o) => o.key === key)?.label || key;
@@ -101,7 +101,7 @@ export default function OutfitScreen({ route, navigation }) {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {seedItem && (
         <View style={styles.seedBox}>
-          <Image source={{ uri: `${API_BASE_URL}${seedItem.imageUrl}` }} style={styles.seedImage} />
+          <Image source={{ uri: `${API_BASE_URL}${seedItem.imageUrl}` }} style={styles.seedImage} resizeMode="contain" />
           <View style={styles.seedTextWrap}>
             <Text style={styles.seedLabel}>BUILDING AROUND</Text>
             <Text style={styles.seedValue}>
@@ -172,7 +172,7 @@ export default function OutfitScreen({ route, navigation }) {
           <View style={styles.piecesRow}>
             {outfit.itemIds.map((item) => (
               <View key={item._id} style={styles.piece}>
-                <Image source={{ uri: `${API_BASE_URL}${item.imageUrl}` }} style={styles.pieceImage} />
+                <Image source={{ uri: `${API_BASE_URL}${item.imageUrl}` }} style={styles.pieceImage} resizeMode="contain" />
                 <Text style={styles.pieceLabel} numberOfLines={1}>
                   {item.category}
                 </Text>
@@ -226,7 +226,7 @@ export default function OutfitScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   seedBox: {
     flexDirection: 'row',

@@ -25,7 +25,7 @@ import {
   GARMENT_STYLES,
   FABRICS,
 } from '../constants/options';
-import { colors, radii, spacing, type } from '../constants/theme';
+import { colors, layout, radii, spacing, type } from '../constants/theme';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000';
 const prettify = (value) => value.replace(/_/g, ' ');
@@ -92,7 +92,7 @@ export default function ItemDetailScreen({ route, navigation }) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.imageWrap}>
-        <Image source={{ uri: `${API_BASE_URL}${item.imageUrl}` }} style={styles.image} />
+        <Image source={{ uri: `${API_BASE_URL}${item.imageUrl}` }} style={styles.image} resizeMode="contain" />
         {saving && (
           <View style={styles.savingPill}>
             <ActivityIndicator size="small" color={colors.onAccent} />
@@ -100,6 +100,8 @@ export default function ItemDetailScreen({ route, navigation }) {
           </View>
         )}
       </View>
+
+      <Text style={styles.autosaveHint}>Tap a tag to change it — changes save immediately.</Text>
 
       <Button
         label="Build an outfit around this"
@@ -224,6 +226,13 @@ export default function ItemDetailScreen({ route, navigation }) {
       )}
 
       <Button
+        label="Done"
+        icon="checkmark"
+        onPress={() => navigation.goBack()}
+        style={styles.doneButton}
+      />
+
+      <Button
         label="Delete this item"
         icon="trash-outline"
         variant="danger"
@@ -235,7 +244,7 @@ export default function ItemDetailScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   imageWrap: { position: 'relative' },
   image: {
@@ -257,6 +266,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   savingText: { ...type.caption, color: colors.onAccent },
+  autosaveHint: { ...type.caption, color: colors.inkFaint, marginTop: spacing.sm, textAlign: 'center' },
   buildButton: { marginTop: spacing.lg },
   section: { marginTop: spacing.xl },
   sectionTitle: { ...type.overline, color: colors.inkMuted, marginBottom: spacing.md },
@@ -275,5 +285,6 @@ const styles = StyleSheet.create({
   disclosureSubtitle: { ...type.caption, color: colors.inkMuted, marginTop: 2 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
   errorText: { textAlign: 'center', marginTop: spacing.xxl, color: colors.danger },
-  deleteButton: { marginTop: spacing.xxl },
+  doneButton: { marginTop: spacing.xxl },
+  deleteButton: { marginTop: spacing.md },
 });

@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: outfitgenerator-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      # Prompted for at Blueprint creation time — never stored in this file.
+      - key: MONGODB_URI
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      # Render generates and stores this itself — nothing to fill in.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: OPENROUTER_VISION_MODEL
+        value: anthropic/claude-sonnet-5
+      # Outfit selection is an easy task (pick one of five pre-validated
+      # candidates and explain it), so the faster model is ~40% quicker here
+      # with no quality loss. Vision classification stays on Sonnet.
+      - key: OPENROUTER_TEXT_MODEL
+        value: anthropic/claude-haiku-4.5
+      - key: OPENROUTER_SITE_NAME
+        value: OutfitGenerator

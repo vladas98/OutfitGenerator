@@ -12,7 +12,7 @@ export default function ItemCard({ item, imageBaseUrl, onPress }) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
       onPress={() => onPress(item)}
     >
-      <Image source={{ uri: `${imageBaseUrl}${item.imageUrl}` }} style={styles.image} />
+      <Image source={{ uri: `${imageBaseUrl}${item.imageUrl}` }} style={styles.image} resizeMode="contain" />
 
       {isPending && (
         <View style={styles.overlay}>

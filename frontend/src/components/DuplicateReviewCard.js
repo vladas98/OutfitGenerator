@@ -15,13 +15,13 @@ export default function DuplicateReviewCard({ item, imageBaseUrl, onKeep, onDele
       <View style={styles.comparison}>
         <View style={styles.side}>
           <Text style={styles.sideLabel}>JUST ADDED</Text>
-          <Image source={{ uri: `${imageBaseUrl}${item.imageUrl}` }} style={styles.image} />
+          <Image source={{ uri: `${imageBaseUrl}${item.imageUrl}` }} style={styles.image} resizeMode="contain" />
         </View>
         <Text style={styles.versus}>vs</Text>
         <View style={styles.side}>
           <Text style={styles.sideLabel}>IN CLOSET</Text>
           {existing?.imageUrl ? (
-            <Image source={{ uri: `${imageBaseUrl}${existing.imageUrl}` }} style={styles.image} />
+            <Image source={{ uri: `${imageBaseUrl}${existing.imageUrl}` }} style={styles.image} resizeMode="contain" />
           ) : (
             <View style={[styles.image, styles.imageMissing]} />
           )}

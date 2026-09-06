@@ -12,6 +12,9 @@ import {
   PlayfairDisplay_600SemiBold,
 } from '@expo-google-fonts/playfair-display';
 
+import { AuthProvider, useAuth } from './src/context/AuthContext';
+import LoginScreen from './src/screens/LoginScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import ClosetScreen from './src/screens/ClosetScreen';
 import ItemDetailScreen from './src/screens/ItemDetailScreen';
@@ -29,6 +32,7 @@ const ClosetStack = createNativeStackNavigator();
 const AddStack = createNativeStackNavigator();
 const OutfitStack = createNativeStackNavigator();
 const SavedStack = createNativeStackNavigator();
+const AuthStack = createNativeStackNavigator();
 
 const navTheme = {
   ...DefaultTheme,
@@ -50,6 +54,15 @@ const stackOptions = {
   headerTintColor: colors.accent,
   contentStyle: { backgroundColor: colors.background },
 };
+
+function AuthStackScreen() {
+  return (
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="SignUp" component={SignUpScreen} />
+    </AuthStack.Navigator>
+  );
+}
 
 function HomeStackScreen() {
   return (
@@ -106,51 +119,67 @@ const TAB_ICONS = {
   SavedTab: ['heart', 'heart-outline'],
 };
 
-export default function App() {
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      initialRouteName="HomeTab"
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.inkFaint,
+        tabBarLabelStyle: { ...type.label, fontSize: 9.5, letterSpacing: 0.4 },
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
+          height: 84,
+          paddingTop: 8,
+          paddingBottom: 26,
+        },
+        tabBarIcon: ({ focused, color, size }) => {
+          const [active, inactive] = TAB_ICONS[route.name];
+          return <Ionicons name={focused ? active : inactive} size={size - 3} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="HomeTab" component={HomeStackScreen} options={{ title: 'Home' }} />
+      <Tab.Screen name="ClosetTab" component={ClosetStackScreen} options={{ title: 'Closet' }} />
+      <Tab.Screen name="AddTab" component={AddStackScreen} options={{ title: 'Add' }} />
+      <Tab.Screen name="OutfitsTab" component={OutfitStackScreen} options={{ title: 'Generate' }} />
+      <Tab.Screen name="SavedTab" component={SavedStackScreen} options={{ title: 'Saved' }} />
+    </Tab.Navigator>
+  );
+}
+
+function AppShell() {
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_500Medium,
     PlayfairDisplay_600SemiBold,
     PlayfairDisplay_400Regular_Italic,
   });
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) await SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+  // Wait for fonts AND the session-restore check together, so we never flash
+  // the login screen for a split second before an existing session resolves.
+  const ready = fontsLoaded && !authLoading;
 
-  // Every heading in the app uses the serif font, so nothing should render
-  // until it's actually loaded — otherwise the first frame flashes in the
-  // system font and re-flows once Playfair swaps in.
-  if (!fontsLoaded) return null;
+  const onNavigationReady = useCallback(async () => {
+    if (ready) await SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
 
   return (
-    <NavigationContainer theme={navTheme} onReady={onLayoutRootView}>
-      <Tab.Navigator
-        initialRouteName="HomeTab"
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarActiveTintColor: colors.accent,
-          tabBarInactiveTintColor: colors.inkFaint,
-          tabBarLabelStyle: { ...type.label, fontSize: 9.5, letterSpacing: 0.4 },
-          tabBarStyle: {
-            backgroundColor: colors.background,
-            borderTopColor: colors.border,
-            height: 84,
-            paddingTop: 8,
-            paddingBottom: 26,
-          },
-          tabBarIcon: ({ focused, color, size }) => {
-            const [active, inactive] = TAB_ICONS[route.name];
-            return <Ionicons name={focused ? active : inactive} size={size - 3} color={color} />;
-          },
-        })}
-      >
-        <Tab.Screen name="HomeTab" component={HomeStackScreen} options={{ title: 'Home' }} />
-        <Tab.Screen name="ClosetTab" component={ClosetStackScreen} options={{ title: 'Closet' }} />
-        <Tab.Screen name="AddTab" component={AddStackScreen} options={{ title: 'Add' }} />
-        <Tab.Screen name="OutfitsTab" component={OutfitStackScreen} options={{ title: 'Generate' }} />
-        <Tab.Screen name="SavedTab" component={SavedStackScreen} options={{ title: 'Saved' }} />
-      </Tab.Navigator>
+    <NavigationContainer theme={navTheme} onReady={onNavigationReady}>
+      {isAuthenticated ? <MainTabs /> : <AuthStackScreen />}
       <StatusBar style="dark" />
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
   );
 }

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ClothesApp",
-    "slug": "clothesapp",
+    "name": "OutfitGenerator",
+    "slug": "outfitgenerator",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -28,7 +28,8 @@
           "cameraPermission": "ClothesApp needs access to your camera to photograph clothing items."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-secure-store"
     ]
   }
 }

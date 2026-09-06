@@ -15,7 +15,7 @@ import Chip from '../components/Chip';
 import EmptyState from '../components/EmptyState';
 import { listSavedOutfits, unsaveOutfit, updateOutfitOccasion } from '../api/outfits';
 import { OCCASIONS } from '../constants/options';
-import { colors, radii, shadow, spacing, type } from '../constants/theme';
+import { colors, layout, radii, shadow, spacing, type } from '../constants/theme';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000';
 const occasionLabel = (key) => OCCASIONS.find((o) => o.key === key)?.label || key;
@@ -142,6 +142,7 @@ export default function SavedOutfitsScreen({ navigation }) {
                   key={item._id}
                   source={{ uri: `${API_BASE_URL}${item.imageUrl}` }}
                   style={styles.pieceImage}
+                  resizeMode="contain"
                 />
               ))}
             </View>
@@ -155,7 +156,7 @@ export default function SavedOutfitsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   list: { padding: spacing.lg },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
   errorText: { textAlign: 'center', marginTop: spacing.xxl, color: colors.danger },

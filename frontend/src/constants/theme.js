@@ -36,6 +36,15 @@ export const colors = {
   onAccent: '#FFFFFF',
 };
 
+// On a phone this never matters — every device is narrower than this. On the
+// web build it's the difference between tiles/images sized for a phone
+// screen and the same percentage-based layout stretching to a full desktop
+// browser window (a 3-column grid tile at 31.5% of a 1500px window is ~470px
+// — not a thumbnail). Every screen's root container caps against this.
+export const layout = {
+  maxContentWidth: 640,
+};
+
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -94,4 +103,4 @@ export const shadow = {
   },
 };
 
-export default { colors, spacing, radii, type, shadow, fonts };
+export default { colors, spacing, radii, type, shadow, fonts, layout };

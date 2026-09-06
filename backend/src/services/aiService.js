@@ -214,7 +214,12 @@ Pick the single best candidate for the occasion, keeping the style rules in mind
 {
   "chosenCandidateIndex": <index of the candidate you picked>,
   "reasoning": "<2-4 sentence explanation of why this outfit works for the occasion, referencing color harmony, formality, and any relevant style rule>"
-}`;
+}
+
+The reasoning is shown directly to the user, who never sees this candidate list.
+Write it as a stylist talking about their outfit — describe the actual garments
+("the red floral top", "the beige trousers"). Never mention candidates, indexes,
+scores, or numbers from this data, and never use the field names above.`;
 
 /**
  * Asks Claude (via OpenRouter) to pick the best pre-filtered candidate and explain why.
@@ -224,20 +229,24 @@ Pick the single best candidate for the occasion, keeping the style rules in mind
  * @param {string} [feedbackSummary]
  */
 async function chooseOutfit(candidates, occasion, styleRules, feedbackSummary) {
+  // Enum values go in human-readable — otherwise the model echoes raw values
+  // like "smart_casual" straight into reasoning the user reads.
+  const readable = (value) => (typeof value === 'string' ? value.replace(/_/g, ' ') : value);
+
   const candidateDescriptions = candidates.map((c, index) => ({
     index,
     colorScore: c.score,
     colorRelations: c.relations,
     items: c.items.map((i) => ({
-      category: i.category,
-      colorFamily: i.colorFamily,
-      pattern: i.pattern,
-      formality: i.formality,
+      category: readable(i.category),
+      colorFamily: readable(i.colorFamily),
+      pattern: readable(i.pattern),
+      formality: readable(i.formality),
     })),
   }));
 
   const userMessage = [
-    `Occasion: ${occasion}`,
+    `Occasion: ${readable(occasion)}`,
     styleRules && styleRules.length ? `Style rules for this occasion:\n- ${styleRules.join('\n- ')}` : null,
     feedbackSummary ? `User style history: ${feedbackSummary}` : null,
     `Candidates: ${JSON.stringify(candidateDescriptions, null, 2)}`,
@@ -246,7 +255,7 @@ async function chooseOutfit(candidates, occasion, styleRules, feedbackSummary) {
     .join('\n\n');
 
   return requestJson({
-    model: process.env.OPENROUTER_TEXT_MODEL || 'anthropic/claude-sonnet-5',
+    model: process.env.OPENROUTER_TEXT_MODEL || 'anthropic/claude-haiku-4.5',
     messages: [
       { role: 'system', content: OUTFIT_SYSTEM_PROMPT },
       { role: 'user', content: userMessage },

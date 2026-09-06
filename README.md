@@ -48,3 +48,7 @@ npx expo start
 ```
 
 Full setup details, the API reference, and design notes live in [`backend/README.md`](backend/README.md) and [`frontend/README.md`](frontend/README.md).
+
+## Deploying it
+
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for a step-by-step guide to hosting this for free (MongoDB Atlas + Render + Vercel), so it's reachable as a plain web link.

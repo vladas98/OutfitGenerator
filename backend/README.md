@@ -10,17 +10,25 @@ cp .env.example .env
 ```
 
 Fill in `.env`:
+- `JWT_SECRET` — signs login sessions. A random string (`openssl rand -hex 32`); changing it logs everyone out.
 - `MONGODB_URI` — local (`mongodb://127.0.0.1:27017/clothesapp`) or an Atlas connection string.
 - `OPENROUTER_API_KEY` — from https://openrouter.ai/keys
-- `OPENROUTER_VISION_MODEL` / `OPENROUTER_TEXT_MODEL` — default to `anthropic/claude-3.5-sonnet`, swap for any OpenRouter model id.
+- `OPENROUTER_VISION_MODEL` / `OPENROUTER_TEXT_MODEL` — default to `anthropic/claude-sonnet-5`, swap for any OpenRouter model id.
 
 ```
 npm run dev
 ```
 
-Server starts on `PORT` (default 4000). No auth system — every request is scoped by an `x-user-id` header, defaulting to `demo-user` if omitted.
+Server starts on `PORT` (default 4000). Every route except `/health` and `POST /api/auth/register` / `POST /api/auth/login` requires a `Authorization: Bearer <token>` header — see the Auth section below.
 
 ## API
+
+**Auth** — everything below except these three routes requires `Authorization: Bearer <token>`, obtained from register or login.
+- `POST /api/auth/register` — body `{ "email", "password", "name"? }`. Password must be 6+ characters; 409 if the email's taken. Returns `{ token, user }`.
+- `POST /api/auth/login` — body `{ "email", "password" }`. Same "incorrect email or password" message whether the email is unknown or the password is wrong, so the error can't be used to enumerate accounts. Returns `{ token, user }`.
+- `GET /api/auth/me` — the current user, from the token.
+
+**Items / Outfits / Feedback**
 
 - `POST /api/items/batch` — multipart form, field `images` (up to 20 files). Fingerprints each image for duplicates, creates pending Items, returns them immediately, then classifies each one concurrently in the background (so the client can poll for real per-item progress).
 - `GET /api/items?category=&colorFamily=` — list the user's closet.
@@ -40,6 +48,8 @@ Server starts on `PORT` (default 4000). No auth system — every request is scop
 - `POST /api/feedback` — body `{ "outfitId", "liked": true|false, "reason"? }`. Feeds future outfit generations via a rolling like/dislike summary.
 
 ## Notes
+
+- **Real per-account isolation.** `requireAuth` (`src/middleware/auth.js`) verifies a JWT and sets `req.userId` from it — every controller already scoped its queries by `req.userId`, so this replaced the old scheme (a client-supplied `x-user-id` header, trusted as-is, defaulting to a shared `demo-user`) without touching the controllers themselves. Passwords are hashed with `bcryptjs`; `User.toJSON` strips the hash so it can't leak into a response even by accident. Sessions are 30-day JWTs — long-lived on purpose, since there's nothing more sensitive here than a closet of clothing photos and re-login friction isn't worth it.
 
 - **Model replies use structured outputs.** Both classification and outfit selection send a JSON Schema via `response_format`, so the provider guarantees a parseable reply. Asking for JSON in the prompt alone was not reliable — the model intermittently returned a truncated string or omitted the closing brace (roughly 1 in 5 calls), which failed the whole request. The classification schema also mirrors the Item model's enums, so an invalid category can't reach Mongoose. If a configured model doesn't support structured outputs, `requestJson` falls back to a plain request with a lenient parser that repairs those truncations.
 

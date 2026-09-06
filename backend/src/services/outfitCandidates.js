@@ -54,8 +54,20 @@ function passesCoverageRules(item, rule) {
 const PREFERENCE_BONUS = 3;
 
 function preferenceBonus(items, rule) {
-  const reward = (field, preferred) =>
-    preferred?.length ? items.filter((i) => preferred.includes(i[field])).length : 0;
+  // Scored as the *proportion* of relevant pieces that match, not a raw count.
+  // Counting meant a two-piece outfit could earn double what a single dress
+  // could on the same preference, so dresses lost on arithmetic rather than
+  // on style — the same flaw the color scoring had before it was averaged.
+  //
+  // "Relevant" skips pieces the field can't apply to: a bottom is always
+  // `not_applicable` for sleeves and neckline, and shouldn't dilute the score.
+  const reward = (field, preferred) => {
+    if (!preferred?.length) return 0;
+    const relevant = items.filter((i) => i[field] && i[field] !== 'not_applicable');
+    if (relevant.length === 0) return 0;
+    const matching = relevant.filter((i) => preferred.includes(i[field])).length;
+    return matching / relevant.length;
+  };
 
   return (
     PREFERENCE_BONUS *

@@ -4,16 +4,21 @@
   "description": "Backend for AI Personal Styling App",
   "main": "src/server.js",
   "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
   },
   "dependencies": {
     "axios": "^1.7.9",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jimp": "^1.6.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.9.5",
     "multer": "^2.0.0"
   }

@@ -57,7 +57,12 @@ const OCCASION_RULES = {
     // satin top is a date-night outfit, so pants can be any formality.
     // `formal` is included because a formal satin dress is squarely date-night;
     // excluding it would drop exactly the pieces this occasion wants most.
-    allowedFormality: ['smart_casual', 'business', 'formal'],
+    // `formal` is deliberately excluded, which is what keeps this occasion
+    // distinct from wedding guest (business/formal only). Formal gowns are
+    // sleeveless + satin + low-necked, so they sweep three of the four
+    // preference bonuses below — a soft preference wasn't enough to stop them
+    // dominating, and date night was returning the same dresses as a wedding.
+    allowedFormality: ['smart_casual', 'business'],
     formalityExemptCategories: ['bottom'],
     // Sleeveless cuts and satin/lace/leather fabrics are what make this read as
     // date night rather than daywear. These are scored, not required, so the
@@ -91,7 +96,12 @@ const OCCASION_RULES = {
     avoidPatterns: ['graphic', 'sequin', 'sequins'],
     allowedSeasons: null,
     disallowedSleeves: [],
-    disallowedNecklines: ['low', 'backless'],
+    // Only `backless` is blocked outright. The guidelines say to avoid
+    // "very low-cut or backless *without a cover-up*" — conditional, not an
+    // absolute ban — and the classifier's `low` bucket is coarse enough that
+    // it lumps a modest V-neck in with a plunge, so blocking it ruled out
+    // most otherwise wedding-appropriate dresses.
+    disallowedNecklines: ['backless'],
     disallowedHemlines: ['above_knee'],
     disallowedGarmentStyles: ['crop', 'loungewear', 'activewear', 'beachwear', 'sheer'],
     // Analogous or neutral+accent is safest; keep complementary impact restrained.

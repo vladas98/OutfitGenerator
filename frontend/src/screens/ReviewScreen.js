@@ -4,7 +4,7 @@ import ItemCard from '../components/ItemCard';
 import Button from '../components/Button';
 import DuplicateReviewCard from '../components/DuplicateReviewCard';
 import { getItem, deleteItem, dismissDuplicate } from '../api/items';
-import { colors, radii, spacing, type } from '../constants/theme';
+import { colors, layout, radii, spacing, type } from '../constants/theme';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000';
 const POLL_INTERVAL_MS = 1500;
@@ -144,7 +144,7 @@ export default function ReviewScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   processingContainer: {
     flex: 1,
     justifyContent: 'center',
