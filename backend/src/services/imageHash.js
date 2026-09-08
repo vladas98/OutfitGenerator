@@ -8,11 +8,12 @@ const HASH_WIDTH = 9;
 const HASH_HEIGHT = 8;
 
 /**
- * @param {string} imagePath
+ * @param {string|Buffer} source path on disk, or the image bytes themselves —
+ *   uploads hash straight from memory now that images live in MongoDB.
  * @returns {Promise<string>} 64-character binary string
  */
-async function computeImageHash(imagePath) {
-  const image = await Jimp.read(imagePath);
+async function computeImageHash(source) {
+  const image = await Jimp.read(source);
   image.greyscale().resize({ w: HASH_WIDTH, h: HASH_HEIGHT });
 
   const { data, width } = image.bitmap;

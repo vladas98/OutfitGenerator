@@ -54,7 +54,7 @@ Open the frontend URL and check:
 
 - **Real accounts now.** Your professor signs up with their own email and password and gets their own private closet — separate from yours. Nothing to pre-seed or share.
 - **Your OpenRouter key pays for every request** anyone makes through the hosted link — classification and outfit generation both call it. Low-volume classroom use is cheap, but it's not free to leave the link open indefinitely.
-- **Uploaded images aren't guaranteed to persist.** They're stored on Render's local disk, which is wiped whenever the backend redeploys or restarts (including the idle spin-down above). If that happens, closet *data* — tags, generated outfits, feedback — is unaffected, since it's in MongoDB; only the image files go missing, leaving broken thumbnails until they're re-uploaded. Practically: **avoid redeploying the backend right before a demo.** Moving image storage to something like Cloudinary is the real fix, and the one follow-up worth doing before this is used for anything beyond a class demo.
+- **Uploaded images survive redeploys.** They're stored in MongoDB rather than on Render's disk, precisely because that disk is wiped on every restart and redeploy — which previously turned every closet into broken thumbnails after a deploy. Nothing to babysit before a demo now.
 - **Password reset has no verification step.** `POST /api/auth/reset-password` sets a new password from just an email address — anyone who knows an account's email can take it over. Deliberate scope call for a demo with no email infrastructure; see `backend/README.md`.
 
 ## Alternative: frontend on Vercel

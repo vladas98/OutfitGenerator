@@ -25,9 +25,17 @@ function mimeTypeFor(filePath) {
   return 'image/jpeg';
 }
 
-function imageToDataUrl(filePath) {
-  const buffer = fs.readFileSync(filePath);
-  return `data:${mimeTypeFor(filePath)};base64,${buffer.toString('base64')}`;
+/**
+ * Accepts either a path on disk (used by the maintenance scripts) or an
+ * already-loaded `{ buffer, mime }`, which is what the upload path passes now
+ * that images go straight to MongoDB without touching the filesystem.
+ */
+function imageToDataUrl(image) {
+  if (typeof image === 'string') {
+    const buffer = fs.readFileSync(image);
+    return `data:${mimeTypeFor(image)};base64,${buffer.toString('base64')}`;
+  }
+  return `data:${image.mime || 'image/jpeg'};base64,${image.buffer.toString('base64')}`;
 }
 
 /**
@@ -190,13 +198,14 @@ Respond with ONLY that JSON object. No prose, no markdown fences.`;
  * caller) rather than batched into one multi-image call, so each item's
  * database status can be updated as soon as it finishes — giving the client
  * real per-item progress instead of an all-or-nothing batch result.
- * @param {string} imagePath
+ * @param {string|{buffer: Buffer, mime: string}} image path on disk, or the
+ *   image already in memory (what the upload path passes)
  * @returns {Promise<object>} classification fields
  */
-async function classifyItem(imagePath) {
+async function classifyItem(image) {
   const content = [
     { type: 'text', text: CLASSIFICATION_PROMPT },
-    { type: 'image_url', image_url: { url: imageToDataUrl(imagePath) } },
+    { type: 'image_url', image_url: { url: imageToDataUrl(image) } },
   ];
 
   return requestJson({

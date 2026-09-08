@@ -46,6 +46,10 @@ const itemSchema = new mongoose.Schema(
     garmentStyle: { type: String, enum: GARMENT_STYLES },
     fabric: { type: String, enum: FABRICS },
     season: { type: String, enum: SEASONS },
+    // The bytes live in the ItemImage collection; imageUrl is the route that
+    // serves them (`/api/images/<imageId>`), kept as a plain string so the
+    // client keeps treating it as an opaque URL.
+    imageId: { type: mongoose.Schema.Types.ObjectId, ref: 'ItemImage' },
     imageUrl: { type: String, required: true },
     status: { type: String, enum: STATUSES, default: 'pending' },
     classificationError: { type: String },

@@ -1,10 +1,8 @@
-const path = require('path');
 const mongoose = require('mongoose');
 const Item = require('../models/Item');
+const ItemImage = require('../models/ItemImage');
 const { classifyItem } = require('../services/aiService');
 const { computeImageHash, isProbableDuplicate } = require('../services/imageHash');
-
-const uploadPath = (filename) => path.join(__dirname, '..', '..', 'uploads', filename);
 
 /**
  * Fingerprints each uploaded image and flags any that look like a photo the
@@ -15,8 +13,8 @@ const uploadPath = (filename) => path.join(__dirname, '..', '..', 'uploads', fil
 async function detectDuplicates(files, userId) {
   const hashes = await Promise.all(
     files.map((file) =>
-      computeImageHash(uploadPath(file.filename)).catch((err) => {
-        console.error(`Could not hash ${file.filename}:`, err.message);
+      computeImageHash(file.buffer).catch((err) => {
+        console.error(`Could not hash ${file.originalname}:`, err.message);
         return null;
       })
     )
@@ -53,11 +51,22 @@ async function uploadBatch(req, res, next) {
 
     const { hashes, ids, duplicateOf } = await detectDuplicates(files, req.userId);
 
+    // Store the bytes first — an Item whose image is missing is the broken
+    // state we're avoiding, so the image must exist before the item points at it.
+    const images = await ItemImage.insertMany(
+      files.map((file) => ({
+        userId: req.userId,
+        data: file.buffer,
+        mime: file.mimetype,
+      }))
+    );
+
     const items = await Item.insertMany(
       files.map((file, index) => ({
         _id: ids[index],
         userId: req.userId,
-        imageUrl: `/uploads/${file.filename}`,
+        imageId: images[index]._id,
+        imageUrl: `/api/images/${images[index]._id}`,
         status: 'pending',
         imageHash: hashes[index],
         duplicateOfItemId: duplicateOf[index],
@@ -70,7 +79,7 @@ async function uploadBatch(req, res, next) {
     classifyBatchInBackground(
       items.map((item, index) => ({
         itemId: item._id,
-        imagePath: uploadPath(files[index].filename),
+        image: { buffer: files[index].buffer, mime: files[index].mimetype },
       }))
     );
   } catch (err) {
@@ -82,11 +91,11 @@ async function uploadBatch(req, res, next) {
 // the database as soon as it's ready. This means the client polling GET
 // /api/items can compute real per-item progress (N of M done) instead of an
 // all-or-nothing batch result, and one bad photo doesn't block the rest.
-async function classifyBatchInBackground(itemsWithPaths) {
+async function classifyBatchInBackground(itemsWithImages) {
   await Promise.all(
-    itemsWithPaths.map(async ({ itemId, imagePath }) => {
+    itemsWithImages.map(async ({ itemId, image }) => {
       try {
-        const result = await classifyItem(imagePath);
+        const result = await classifyItem(image);
         await Item.findByIdAndUpdate(itemId, { ...result, status: 'classified' });
         await clearMismatchedDuplicateFlag(itemId);
       } catch (err) {
@@ -196,10 +205,46 @@ async function deleteItem(req, res, next) {
   try {
     const item = await Item.findOneAndDelete({ _id: req.params.id, userId: req.userId });
     if (!item) return res.status(404).json({ error: 'Item not found' });
+    // Drop the bytes too, or deleted photos would accumulate in the database
+    // forever with nothing referencing them.
+    if (item.imageId) await ItemImage.deleteOne({ _id: item.imageId, userId: req.userId });
     res.status(204).send();
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { uploadBatch, listItems, getItem, updateItem, deleteItem, dismissDuplicate };
+/**
+ * Serves an image's bytes. Deliberately unauthenticated: the app renders these
+ * with plain <Image src>, which can't attach an Authorization header. That
+ * matches the old behaviour, where the same files were served as static assets
+ * — an image is reachable by anyone who knows its id, so the id (a random
+ * ObjectId) is the only thing protecting it. Fine for this app's content;
+ * anything genuinely private would need signed URLs instead.
+ */
+async function getImage(req, res, next) {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+    const image = await ItemImage.findById(req.params.id).lean();
+    if (!image) return res.status(404).json({ error: 'Image not found' });
+
+    // `.lean()` hands back the raw BSON value, which is a Binary rather than a
+    // Node Buffer. Passing that straight to res.send() makes Express treat it
+    // as an object and JSON-encode it — the image arrives base64-encoded and
+    // 33% too large, and no browser can render it. Normalise to a real Buffer.
+    const bytes = Buffer.isBuffer(image.data)
+      ? image.data
+      : Buffer.from(image.data.buffer || image.data);
+
+    // Bytes never change for a given id, so let clients cache aggressively.
+    res.set('Content-Type', image.mime || 'image/jpeg');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.send(bytes);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { uploadBatch, listItems, getItem, getImage, updateItem, deleteItem, dismissDuplicate };

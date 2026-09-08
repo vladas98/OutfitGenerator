@@ -1,14 +1,9 @@
 const multer = require('multer');
-const path = require('path');
-const crypto = require('crypto');
 
-const storage = multer.diskStorage({
-  destination: path.join(__dirname, '..', '..', 'uploads'),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    cb(null, `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`);
-  },
-});
+// Images are kept in MongoDB (see models/ItemImage.js), not on disk, so multer
+// hands the controller a Buffer rather than writing a file. The host wipes its
+// filesystem on restart, which used to leave every uploaded photo missing.
+const storage = multer.memoryStorage();
 
 function fileFilter(req, file, cb) {
   if (!file.mimetype.startsWith('image/')) {
