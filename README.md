@@ -17,6 +17,7 @@ An AI personal styling app. Photograph your closet, and it classifies each item,
 - **Duplicate detection** — perceptual image hashing flags re-uploaded or near-identical photos for the user to resolve, without auto-deleting anything.
 - **Editable outfits** — swap out one piece without regenerating the whole look; seed an outfit around a specific closet item.
 - **Saved outfits & feedback loop** — liked outfits are kept in one place; like/dislike history informs future generations.
+- **Accounts** — email/password sign-in with per-user closets, backed by JWT sessions and bcrypt-hashed passwords. Password reset is intentionally unverified (no email infrastructure) — fine for a demo, not for real users; see [`backend/README.md`](backend/README.md).
 
 ## Tech stack
 
@@ -51,4 +52,4 @@ Full setup details, the API reference, and design notes live in [`backend/README
 
 ## Deploying it
 
-See [`DEPLOYMENT.md`](DEPLOYMENT.md) for a step-by-step guide to hosting this for free (MongoDB Atlas + Render + Vercel), so it's reachable as a plain web link.
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for a step-by-step guide to hosting this for free (MongoDB Atlas + Render), so it's reachable as a plain web link. `render.yaml` defines both the API and the web frontend, so a single Render Blueprint deploys the whole app.

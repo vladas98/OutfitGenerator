@@ -19,13 +19,14 @@ Fill in `.env`:
 npm run dev
 ```
 
-Server starts on `PORT` (default 4000). Every route except `/health` and `POST /api/auth/register` / `POST /api/auth/login` requires a `Authorization: Bearer <token>` header — see the Auth section below.
+Server starts on `PORT` (default 4000). Every route except `/health`, `POST /api/auth/register`, `POST /api/auth/login`, and `POST /api/auth/reset-password` requires a `Authorization: Bearer <token>` header — see the Auth section below.
 
 ## API
 
-**Auth** — everything below except these three routes requires `Authorization: Bearer <token>`, obtained from register or login.
+**Auth** — register, login, and reset-password are public; everything else requires `Authorization: Bearer <token>`, obtained from register or login.
 - `POST /api/auth/register` — body `{ "email", "password", "name"? }`. Password must be 6+ characters; 409 if the email's taken. Returns `{ token, user }`.
 - `POST /api/auth/login` — body `{ "email", "password" }`. Same "incorrect email or password" message whether the email is unknown or the password is wrong, so the error can't be used to enumerate accounts. Returns `{ token, user }`.
+- `POST /api/auth/reset-password` — body `{ "email", "newPassword" }`. Sets a new password directly and returns the same generic message whether or not the account exists (same no-enumeration reasoning as login). **There is no verification step** — no emailed link or code — so anyone who knows an account's email can take it over. That was a deliberate scope call for a class demo with no email infrastructure; it is not safe for real users, and adding a token-and-email flow is the fix before this goes anywhere real.
 - `GET /api/auth/me` — the current user, from the token.
 
 **Items / Outfits / Feedback**

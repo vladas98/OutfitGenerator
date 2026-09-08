@@ -1,6 +1,8 @@
 # Deploying OutfitGenerator
 
-Three free services, wired together: MongoDB Atlas (database) → Render (backend API) → Vercel (frontend, built for web). Each step below is done in that service's own dashboard — nothing here can be run from a terminal, since it involves creating accounts.
+Two free services, wired together: MongoDB Atlas (database) → Render (both the backend API and the frontend, served as a static web build). Each step below is done in that service's own dashboard — nothing here can be run from a terminal, since it involves creating accounts.
+
+`render.yaml` defines **both** services, so one Blueprint sets up the whole thing. (`frontend/vercel.json` is also present if you'd rather host the frontend on Vercel — see the alternative at the end — but the Blueprint path below is the maintained one.)
 
 ## 1. Database — MongoDB Atlas
 
@@ -14,36 +16,35 @@ Three free services, wired together: MongoDB Atlas (database) → Render (backen
    ```
    Insert a database name before the `?`, e.g. `.../outfitgenerator?retryWrites=...`. Fill in your actual username/password. Keep this string — you'll paste it into Render next.
 
-## 2. Backend — Render
+## 2. Both services — Render Blueprint
 
-The repo includes `render.yaml`, so Render can set most of this up automatically via a **Blueprint**.
+`render.yaml` defines the backend web service *and* the frontend static site, so one Blueprint creates both.
 
 1. Sign up at [render.com](https://render.com) (GitHub login is easiest).
-2. **New** → **Blueprint** → connect the `OutfitGenerator` GitHub repo → branch `main`.
-3. Render reads `render.yaml` and asks for two values it deliberately doesn't store in the repo:
+2. **Connect GitHub properly** — profile icon → **Account Settings** → **Connected Accounts** → **Connect GitHub**, and grant access to the `OutfitGenerator` repo. Skipping this is the single most common thing to get wrong: Render will fall back to cloning the repo anonymously (the build log says *"It looks like we don't have access to your repo, but we'll try to clone it anyway"*), which works for the first deploy but installs **no webhook** — so later pushes never auto-deploy and you're stuck deploying by hand.
+3. **New** → **Blueprint** → select the `OutfitGenerator` repo → branch `main`.
+4. Render reads `render.yaml` and asks for the two values it deliberately doesn't store in the repo:
    - `MONGODB_URI` — the connection string from step 1
    - `OPENROUTER_API_KEY` — your key from [openrouter.ai/keys](https://openrouter.ai/keys)
-4. Deploy. Once it's live, Render gives you a URL like `https://outfitgenerator-backend.onrender.com`.
-5. Verify it: visit `<that-url>/health` in a browser — you should see `{"ok":true}`.
+5. Approve, and it creates both services:
+   - `outfitgenerator-backend` — the Express API
+   - `outfitgenerator-frontend` — the Expo web build (`npx expo export -p web`), published from `dist/`, with `EXPO_PUBLIC_API_URL` already pointed at the backend in `render.yaml`
 
-**Free-tier caveat:** the service spins down after ~15 minutes of no traffic. The first request after that takes 30–60 seconds to wake back up — expected, not a bug, if your professor's first click feels slow.
+   That env var is baked into the JavaScript at **build** time, not read at runtime — so if you ever change the backend's URL, update `render.yaml` and rebuild the frontend, or it will keep calling the old address.
+6. Verify the backend: visit `<backend-url>/health` — you should see `{"ok":true}`. The backend has no page at `/`; a 404 there is normal, not a broken deploy.
+7. The **frontend** URL is the one you share.
 
-## 3. Frontend — Vercel
+**Free-tier caveats:**
+- The *backend* spins down after ~15 minutes of no traffic; the first request after that takes 30–60 seconds to wake up. Static sites don't sleep, so the page loads instantly and only the first data call feels slow.
+- Uploaded images live on the backend's local disk, which is wiped on every redeploy/restart — see the last section.
 
-The repo includes `frontend/vercel.json` with the build command already set.
+### Redeploying after a push
 
-1. Sign up at [vercel.com](https://vercel.com) (GitHub login is easiest).
-2. **Add New** → **Project** → import the `OutfitGenerator` repo.
-3. Set **Root Directory** to `frontend` in the import settings.
-4. Add an environment variable:
-   - `EXPO_PUBLIC_API_URL` = the Render URL from step 2 (no trailing slash), e.g. `https://outfitgenerator-backend.onrender.com`
+If auto-deploy isn't working (step 2), pushing to `main` will not deploy anything. Deploy each service by hand: open the **service** (not the Blueprint) → **Manual Deploy** → **Deploy latest commit**. The Blueprint's **Manual Sync** button is a different thing — it only re-reads `render.yaml` for service *definition* changes, and does nothing when only app code changed.
 
-   This has to be set **before** you deploy — Expo bakes this value directly into the built JavaScript at build time, not read at runtime. If it's missing, the deployed app would try to reach `localhost` from every visitor's browser and silently fail.
-5. Deploy. Vercel gives you a URL like `https://outfitgenerator.vercel.app` — that's the link to share.
+## 3. Verify end-to-end
 
-## 4. Verify end-to-end
-
-Open the Vercel URL and check:
+Open the frontend URL and check:
 - Home screen loads
 - Add Items → upload a photo → it classifies (this call goes through Render → OpenRouter, so give it a few seconds, more on a cold start)
 - Closet shows the item
@@ -53,4 +54,9 @@ Open the Vercel URL and check:
 
 - **Real accounts now.** Your professor signs up with their own email and password and gets their own private closet — separate from yours. Nothing to pre-seed or share.
 - **Your OpenRouter key pays for every request** anyone makes through the hosted link — classification and outfit generation both call it. Low-volume classroom use is cheap, but it's not free to leave the link open indefinitely.
-- **Uploaded images aren't guaranteed to persist.** They're stored on Render's local disk, which can be wiped when the free-tier service restarts (including the idle spin-down above). If that happens, existing closet *data* (tags, generated outfits, feedback) is unaffected — it's in MongoDB — but a photo thumbnail could go missing until re-uploaded. For extra reliability here, swapping to a service like Cloudinary for image storage is a follow-up worth doing — ask if you want it.
+- **Uploaded images aren't guaranteed to persist.** They're stored on Render's local disk, which is wiped whenever the backend redeploys or restarts (including the idle spin-down above). If that happens, closet *data* — tags, generated outfits, feedback — is unaffected, since it's in MongoDB; only the image files go missing, leaving broken thumbnails until they're re-uploaded. Practically: **avoid redeploying the backend right before a demo.** Moving image storage to something like Cloudinary is the real fix, and the one follow-up worth doing before this is used for anything beyond a class demo.
+- **Password reset has no verification step.** `POST /api/auth/reset-password` sets a new password from just an email address — anyone who knows an account's email can take it over. Deliberate scope call for a demo with no email infrastructure; see `backend/README.md`.
+
+## Alternative: frontend on Vercel
+
+`frontend/vercel.json` is still in the repo if you'd rather host the web build there: **Add New** → **Project** → import the repo → set **Root Directory** to `frontend` → add `EXPO_PUBLIC_API_URL` (the backend's Render URL, no trailing slash) **before** the first deploy, since it's baked in at build time. If you do this, the `outfitgenerator-frontend` service in `render.yaml` is redundant.
